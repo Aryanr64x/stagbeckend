@@ -44,8 +44,8 @@ async def encode(secret: UploadFile = File(...), cover: UploadFile = File(...)):
 
 
 @router.post("/reveal/image-to-image-deep")
-async def decode(stego: UploadFile = File(...)):
-    stego_img = load_image(stego)
+async def decode(embedded: UploadFile = File(...)):
+    stego_img = load_image(embedded)
     stego_img = np.expand_dims(stego_img, axis=0)
 
     recovered_img = rev_model.predict(stego_img)[0]
