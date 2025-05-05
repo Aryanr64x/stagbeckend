@@ -47,13 +47,13 @@ def decode_wav(input_path):
 
 # ROUTES
 @router.post("/embed/text-in-audio")
-async def encode_route(audio: UploadFile = File(...), secret: str = Form(...)):
+async def encode_route(cover: UploadFile = File(...), secret: str = Form(...)):
     try:
         input_path = os.path.join(TEMP_DIR, f"input_{uuid.uuid4()}.wav")
         output_path = os.path.join(TEMP_DIR, f"encoded_{uuid.uuid4()}.wav")
 
         with open(input_path, "wb") as f:
-            shutil.copyfileobj(audio.file, f)
+            shutil.copyfileobj(cover.file, f)
 
         encode_wav(input_path, output_path, secret)
 
@@ -62,11 +62,11 @@ async def encode_route(audio: UploadFile = File(...), secret: str = Form(...)):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 @router.post("/recover/text-in-audio")
-async def decode_route(audio: UploadFile = File(...)):
+async def decode_route(embedded: UploadFile = File(...)):
     try:
         input_path = os.path.join(TEMP_DIR, f"decode_{uuid.uuid4()}.wav")
         with open(input_path, "wb") as f:
-            shutil.copyfileobj(audio.file, f)
+            shutil.copyfileobj(embedded.file, f)
 
         message = decode_wav(input_path)
         return {"decoded_message": message}

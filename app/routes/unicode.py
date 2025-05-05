@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from ..schemas import TextToTextRecoverRequest, TextToTextEmbedRequest
 router = APIRouter()
@@ -41,11 +41,13 @@ def embed_homoglyph(req: TextToTextEmbedRequest):
     possible_indices = [i for i, c in enumerate(cover) if c in HOMOGLEYPHS]
 
     if len(binary) > len(possible_indices):
-        return {
-            "error": "Secret too long or cover too short to embed.",
+        raise HTTPException(
+        status_code=400,
+        detail={
+            "message": "Secret too long or cover too short to embed.",
             "binary_length": len(binary),
             "available_slots": len(possible_indices)
-        }
+         })
 
     stego_chars = list(cover)
     logs = []
@@ -53,9 +55,13 @@ def embed_homoglyph(req: TextToTextEmbedRequest):
     for bit, idx in zip(binary, possible_indices):
         original_char = stego_chars[idx]
         if bit == '1':
+            
             stego_chars[idx] = HOMOGLEYPHS[original_char]
+            
             logs.append(f"Bit 1 → Replaced '{original_char}' with '{HOMOGLEYPHS[original_char]}' at position {idx}")
+       
         else:
+            
             logs.append(f"Bit 0 → Kept '{original_char}' unchanged at position {idx}")
 
     stego_text = ''.join(stego_chars)
